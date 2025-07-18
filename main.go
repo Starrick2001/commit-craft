@@ -2,11 +2,13 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"os"
 	"os/exec"
 
 	"github.com/charmbracelet/huh"
+	"github.com/charmbracelet/huh/spinner"
 	"google.golang.org/genai"
 )
 
@@ -57,6 +59,41 @@ func showOutputScreen(msg string) {
 	}
 }
 
+func callGeminiApi(ctx context.Context, diff string, config Config) (string, error) {
+	client, err := genai.NewClient(ctx, &genai.ClientConfig{APIKey: config.apiKey})
+	if err != nil {
+		log.Fatalln("Failed to create Gemini client:%w", err)
+		return "", err
+	}
+	result, err := client.Models.GenerateContent(
+		ctx,
+		"gemini-2.0-flash",
+		genai.Text("You are an expert at creating a git commit message for a set of changes. Return the generated title commit message. Here is a diff of changes we need a commit message for: "+string(diff)),
+		// genai.Text("You are an expert at creating a git commit message for a set of changes. Return a git commit command line with generated commit message. Here is a diff of changes we need a commit message for: "+string(diff)),
+		&genai.GenerateContentConfig{
+			// ThinkingConfig: &genai.ThinkingConfig{
+			// ThinkingBudget: Int32(0), // Disables thinking
+			// },
+		},
+	)
+	if err != nil {
+		return "", err
+	}
+	return result.Text(), nil
+}
+
+func spinnerAction(ctx context.Context) error {
+	diff := ctx.Value("diff").(string)
+	config := ctx.Value("config").(Config)
+	fmt.Sprint(diff)
+	msg, err := callGeminiApi(ctx, diff, config)
+	if err != nil {
+		return err
+	}
+	ctx = context.WithValue(ctx, "msg", msg)
+	return nil
+}
+
 func main() {
 	ctx := context.Background()
 	apiKey, isEnvApiKeyFound := os.LookupEnv("COMMIT_CRAFT_GEMINI_KEY")
@@ -77,7 +114,7 @@ func main() {
 	if string(diff) == "" {
 		log.Fatalln("no changes to commit, working tree clean")
 	}
-	config := Config{apiKey: apiKey}
+	config := Config{apiKey: apiKey, model: "gemini-2.0-flash"}
 	form := huh.NewForm(
 		huh.NewGroup(
 			huh.NewSelect[string]().
@@ -90,25 +127,22 @@ func main() {
 	if err := form.Run(); err != nil {
 		log.Fatal(err)
 	}
-	client, err := genai.NewClient(ctx, &genai.ClientConfig{APIKey: config.apiKey})
-	if err != nil {
-		log.Fatalln("Failed to create Gemini client:%w", err)
+	ctx = context.WithValue(ctx, "diff", string(diff))
+	if err := spinner.New().Title("Crafting your commit...").Context(ctx).ActionWithErr(func(ctx context.Context) error {
+		diff := ctx.Value("diff").(string)
+		config := ctx.Value("config").(Config)
+		fmt.Sprint(diff)
+		msg, err := callGeminiApi(ctx, diff, config)
+		if err != nil {
+			return err
+		}
+		ctx = context.WithValue(ctx, "msg", msg)
+
+		return nil
+	}).Run(); err != nil {
+		log.Fatal("Spinner error: ", err)
 	}
 
-	result, err := client.Models.GenerateContent(
-		ctx,
-		"gemini-2.0-flash",
-		genai.Text("You are an expert at creating a git commit message for a set of changes. Return the generated title commit message. Here is a diff of changes we need a commit message for: "+string(diff)),
-		// genai.Text("You are an expert at creating a git commit message for a set of changes. Return a git commit command line with generated commit message. Here is a diff of changes we need a commit message for: "+string(diff)),
-		&genai.GenerateContentConfig{
-			// ThinkingConfig: &genai.ThinkingConfig{
-			// ThinkingBudget: Int32(0), // Disables thinking
-			// },
-		},
-	)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	msg := result.Text()
+	msg := ctx.Value("msg").(string)
 	showOutputScreen(msg)
 }
