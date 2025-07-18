@@ -6,12 +6,30 @@ import (
 	"os"
 	"os/exec"
 
+	"github.com/charmbracelet/huh"
 	"google.golang.org/genai"
 )
 
+func executeGitCommit(msg string) {
+	log.Printf("Running command: git commit -m %s \n", msg)
+	if _, err := exec.Command("git", "commit", "-m", msg).Output(); err != nil {
+		log.Fatalf("failed to execute git commit: %v", err)
+	}
+}
+
 func main() {
 	ctx := context.Background()
-	apiKey := os.Getenv("COMMIT_CRAFT_GEMINI_KEY")
+	apiKey, isEnvApiKeyFound := os.LookupEnv("COMMIT_CRAFT_GEMINI_KEY")
+	if !isEnvApiKeyFound {
+		form := huh.NewForm(
+			huh.NewGroup(
+				huh.NewInput().Title("Can not find Gemini Api key in your env, what is your Gemini Api Key?").Value(&apiKey),
+			),
+		)
+		if err := form.Run(); err != nil {
+			log.Fatal(err)
+		}
+	}
 	diff, err := exec.Command("git", "diff", "--cached").Output()
 	if err != nil {
 		log.Fatalln("failed to execute git diff --cached", err)
@@ -39,7 +57,12 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	log.Println("Generated commit msg: ", result.Text())
-	log.Println("Run command: ", "git", "commit", "-m", result.Text())
-	exec.Command("git", "commit", "-m", result.Text()).Output()
+	log.Printf("Generated commit msg: %s \n", result.Text())
+	confirm := false
+	if err := huh.NewConfirm().Title("Do you want to exec git commit command?").Affirmative("Yes").Negative("No").Value(&confirm).Run(); err != nil {
+		log.Fatalln("Confirmation error:", err)
+	}
+	if confirm {
+		executeGitCommit(result.Text())
+	}
 }
