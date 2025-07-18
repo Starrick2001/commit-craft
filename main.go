@@ -12,8 +12,48 @@ import (
 
 func executeGitCommit(msg string) {
 	log.Printf("Running command: git commit -m %s \n", msg)
-	if _, err := exec.Command("git", "commit", "-m", msg).Output(); err != nil {
+	_, err := exec.Command("git", "commit", "-m", msg).Output()
+	if err != nil {
 		log.Fatalf("failed to execute git commit: %v", err)
+	}
+}
+
+const (
+	StateCommit = iota
+	StateQuit
+	StateModify
+)
+
+func showOutputScreen(msg string) {
+	log.Printf("Generated commit msg: '%s' \n", msg)
+	state := StateQuit
+	err := huh.NewForm(
+		huh.NewGroup(
+			huh.NewSelect[int]().
+				Title("Choose your action:").
+				Options(
+					huh.NewOption("Commit", StateCommit),
+					huh.NewOption("Modify", StateModify),
+					huh.NewOption("Quit", StateQuit),
+				).
+				Value(&state)),
+	).Run()
+	if err != nil {
+		log.Fatalln("Choose action error:", err)
+	}
+	switch state {
+	case StateModify:
+		err := huh.NewForm(huh.NewGroup(huh.NewText().Title("Edit your commit message:").Value(&msg))).Run()
+		if err != nil {
+			log.Fatal(err)
+		}
+		showOutputScreen(msg)
+		return
+	case StateCommit:
+		executeGitCommit(msg)
+		return
+	case StateQuit:
+		os.Exit(3)
 	}
 }
 
@@ -37,7 +77,20 @@ func main() {
 	if string(diff) == "" {
 		log.Fatalln("no changes to commit, working tree clean")
 	}
-	client, err := genai.NewClient(ctx, &genai.ClientConfig{APIKey: apiKey})
+	config := Config{apiKey: apiKey}
+	form := huh.NewForm(
+		huh.NewGroup(
+			huh.NewSelect[string]().
+				Title("Choose a model:").
+				Options(
+					huh.NewOption("gemini-2.0-flash", "gemini-2.0-flash"),
+					huh.NewOption("gemini-2.5-flash", "gemini-2.5-flash")).
+				Value(&config.model)),
+	)
+	if err := form.Run(); err != nil {
+		log.Fatal(err)
+	}
+	client, err := genai.NewClient(ctx, &genai.ClientConfig{APIKey: config.apiKey})
 	if err != nil {
 		log.Fatalln("Failed to create Gemini client:%w", err)
 	}
@@ -56,13 +109,6 @@ func main() {
 	if err != nil {
 		log.Fatalln(err)
 	}
-
-	log.Printf("Generated commit msg: %s \n", result.Text())
-	confirm := false
-	if err := huh.NewConfirm().Title("Do you want to exec git commit command?").Affirmative("Yes").Negative("No").Value(&confirm).Run(); err != nil {
-		log.Fatalln("Confirmation error:", err)
-	}
-	if confirm {
-		executeGitCommit(result.Text())
-	}
+	msg := result.Text()
+	showOutputScreen(msg)
 }
