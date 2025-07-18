@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"os"
 	"os/exec"
@@ -10,24 +9,22 @@ import (
 	"google.golang.org/genai"
 )
 
-// Int32 returns a pointer to the int32 value passed in.
-func Int32(v int32) *int32 {
-	return &v
-}
-
 func main() {
 	ctx := context.Background()
 	apiKey := os.Getenv("COMMIT_CRAFT_GEMINI_KEY")
 	diff, err := exec.Command("git", "diff", "--cached").Output()
 	if err != nil {
-		log.Fatalln(err)
+		log.Fatalln("failed to execute git diff --cached", err)
+	}
+	if string(diff) == "" {
+		log.Fatalln("no changes to commit, working tree clean")
 	}
 	client, err := genai.NewClient(ctx, &genai.ClientConfig{APIKey: apiKey})
 	if err != nil {
-		log.Fatalln(err)
+		log.Fatalln("Failed to create Gemini client:%w", err)
 	}
 
-	result, _ := client.Models.GenerateContent(
+	result, err := client.Models.GenerateContent(
 		ctx,
 		"gemini-2.0-flash",
 		genai.Text("You are an expert at creating a git commit message for a set of changes. Return the generated title commit message. Here is a diff of changes we need a commit message for: "+string(diff)),
@@ -38,7 +35,11 @@ func main() {
 			// },
 		},
 	)
+	if err != nil {
+		log.Fatalln(err)
+	}
 
-	fmt.Println("Generated commit msg: ", result.Text())
+	log.Println("Generated commit msg: ", result.Text())
+	log.Println("Run command: ", "git", "commit", "-m", result.Text())
 	exec.Command("git", "commit", "-m", result.Text()).Output()
 }
