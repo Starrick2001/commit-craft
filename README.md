@@ -2,6 +2,10 @@
 
 Commit Craft is a Go-based tool that leverages the Gemini API to automatically generate descriptive commit messages from your staged changes. It streamlines your git workflow by creating conventional commit messages for you.
 
+
+https://github.com/user-attachments/assets/d68fd98e-cef1-4827-987f-79cd2c36a438
+
+
 ## Prerequisites
 
 - [Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) must be installed.
