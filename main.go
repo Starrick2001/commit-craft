@@ -67,7 +67,7 @@ func callGeminiApi(ctx context.Context, diff string, config Config) (string, err
 	}
 	result, err := client.Models.GenerateContent(
 		ctx,
-		"gemini-2.0-flash",
+		config.model,
 		genai.Text("You are an expert at creating a git commit message for a set of changes. Return the generated title commit message. Here is a diff of changes we need a commit message for: "+string(diff)),
 		// genai.Text("You are an expert at creating a git commit message for a set of changes. Return a git commit command line with generated commit message. Here is a diff of changes we need a commit message for: "+string(diff)),
 		&genai.GenerateContentConfig{
