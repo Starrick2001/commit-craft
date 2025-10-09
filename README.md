@@ -2,9 +2,7 @@
 
 Commit Craft is a Go-based tool that leverages the Gemini API to automatically generate descriptive commit messages from your staged changes. It streamlines your git workflow by creating conventional commit messages for you.
 
-
-https://github.com/user-attachments/assets/d68fd98e-cef1-4827-987f-79cd2c36a438
-
+<https://github.com/user-attachments/assets/d68fd98e-cef1-4827-987f-79cd2c36a438>
 
 ## Prerequisites
 
@@ -17,7 +15,7 @@ https://github.com/user-attachments/assets/d68fd98e-cef1-4827-987f-79cd2c36a438
    Download the latest binary for your operating system from the [Releases page](https://github.com/starrick2001/commit-craft/releases).
 
    ```bash
-   curl -O https://github.com/Starrick2001/commit-craft/releases/latest/commit-craft > /usr/local/bin/commit-craft
+   curl -O https://github.com/Starrick2001/commit-craft/releases/latest/commit-craft
    ```
 
 2. **Make it executable:**
