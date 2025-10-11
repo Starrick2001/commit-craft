@@ -1,13 +1,20 @@
 # Commit Craft
 
-Commit Craft is a Go-based tool that leverages the Gemini API to automatically generate descriptive commit messages from your staged changes. It streamlines your git workflow by creating conventional commit messages for you.
+Commit Craft is a Go-based tool that leverages AI to automatically generate descriptive commit messages from your staged changes. It streamlines your git workflow by creating conventional commit messages for you.
 
-<https://github.com/user-attachments/assets/d68fd98e-cef1-4827-987f-79cd2c36a438>
+![Commit Craft Demo](https://github.com/user-attachments/assets/d68fd98e-cef1-4827-987f-79cd2c36a438)
+
+## Features
+
+- **AI-Powered Commit Messages:** Automatically generates descriptive commit messages from your staged changes using AI.
+- **Interactive UI:** Allows you to accept, modify, or quit the commit process.
+- **Multiple AI Providers:** Supports both Gemini and Ollama for commit message generation.
+- **Conventional Commits:** Generates messages that follow the conventional commit format.
 
 ## Prerequisites
 
 - [Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) must be installed.
-- You need a Gemini API key.
+- You need an API key for your chosen AI provider (e.g., Gemini).
 
 ## Installation
 
@@ -39,12 +46,27 @@ cd commit-craft
 makepkg -si
 ```
 
-## Setup
+## Configuration
 
-Set up your Gemini API Key as an environment variable:
+Commit Craft supports both Gemini and Ollama as AI providers. You can configure the provider and API key using environment variables.
+
+### Gemini
+
+To use Gemini, set the following environment variables:
 
 ```bash
+export COMMIT_CRAFT_PROVIDER='gemini'
 export COMMIT_CRAFT_GEMINI_KEY='YOUR_API_KEY'
+```
+
+### Ollama
+
+To use Ollama, set the following environment variables:
+
+```bash
+export COMMIT_CRAFT_PROVIDER='ollama'
+export COMMIT_CRAFT_OLLAMA_MODEL='your-ollama-model'
+export COMMIT_CRAFT_OLLAMA_HOST='http://localhost:11434' # Optional: Defaults to this value
 ```
 
 > **Note:** To make this permanent, add the export command to your shell's configuration file (e.g., `~/.bashrc`, `~/.zshrc`).
@@ -59,13 +81,17 @@ export COMMIT_CRAFT_GEMINI_KEY='YOUR_API_KEY'
    ```
 
 2. **Run Commit Craft:**
-   Execute the program to generate a commit message and apply it.
+   Execute the program to generate a commit message.
 
    ```bash
    commit-craft
    ```
 
-   The tool will use the staged diff to generate a commit message and apply it automatically.
+3. **Choose an action:**
+   The tool will display the generated commit message and prompt you to:
+   - **Commit:** Applies the generated message and creates the commit.
+   - **Modify:** Allows you to edit the message before committing.
+   - **Quit:** Exits the program without creating a commit.
 
 ---
 
@@ -93,7 +119,7 @@ If you prefer to build the tool from the source code, follow these steps.
    go mod tidy
    ```
 
-3. **Run the tool:**
+3. **Run the tool:
 
    ```bash
    go run main.go
