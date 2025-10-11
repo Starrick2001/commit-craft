@@ -31,6 +31,14 @@ Commit Craft is a Go-based tool that leverages the Gemini API to automatically g
    sudo mv commit-craft /usr/local/bin/
    ```
 
+### Arch Linux (from source)
+Alternatively, Arch Linux users can build and install the package using the provided PKGBUILD file:
+```bash
+git clone https://github.com/Starrick2001/commit-craft.git
+cd commit-craft
+makepkg -si
+```
+
 ## Setup
 
 Set up your Gemini API Key as an environment variable:
