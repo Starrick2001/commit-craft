@@ -38,7 +38,8 @@ func GetClient(cfg *config.Config) (*Client, error) {
 	return &Client{provider: provider, cfg: cfg}, nil
 }
 
-func (c *Client) BuildCommit(output *Output) string {
+// Combine the prefix, title, and description into a complete commit message.
+func (c *Client) buildCommit(output *Output) string {
 	return fmt.Sprintf("%s%s\n\n%s", c.cfg.PrefixCommit, output.Title, output.Description)
 }
 
@@ -57,5 +58,5 @@ func (c *Client) GenerateCommit(ctx context.Context, diff string) (string, error
 		return "", errors.New("can not generate commit with message: " + err.Error())
 	}
 
-	return c.BuildCommit(result), nil
+	return c.buildCommit(result), nil
 }
