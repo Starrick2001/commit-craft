@@ -1,6 +1,6 @@
 # Maintainer: Your Name <youremail@domain.com>
 pkgname=commit-craft
-pkgver=1.2.0
+pkgver=1.2.1
 pkgrel=1
 pkgdesc="A tool to craft commit messages."
 arch=('x86_64')

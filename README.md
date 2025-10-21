@@ -2,7 +2,7 @@
 
 Commit Craft is a Go-based tool that leverages AI to automatically generate descriptive commit messages from your staged changes. It streamlines your git workflow by creating conventional commit messages for you.
 
-<https://github.com/user-attachments/assets/d68fd98e-cef1-4827-987f-79cd2c36a438>
+<img alt="Demo" width="100%" src="./doc/demo-1.gif">
 
 ## Features
 
@@ -39,7 +39,9 @@ Commit Craft is a Go-based tool that leverages AI to automatically generate desc
    ```
 
 ### Arch Linux (from source)
+
 Alternatively, Arch Linux users can build and install the package using the provided PKGBUILD file:
+
 ```bash
 git clone https://github.com/Starrick2001/commit-craft.git
 cd commit-craft
@@ -119,7 +121,7 @@ If you prefer to build the tool from the source code, follow these steps.
    go mod tidy
    ```
 
-3. **Run the tool:
+3. \*\*Run the tool:
 
    ```bash
    go run main.go
