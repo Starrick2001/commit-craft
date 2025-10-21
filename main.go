@@ -6,15 +6,17 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"time"
 
 	"commit-craft/config"
 	"commit-craft/provider"
 
 	"github.com/charmbracelet/huh"
+	"golang.design/x/clipboard"
 )
 
 func executeGitCommit(msg string) {
-	log.Printf("Running command: git commit -m %s \n", msg)
+	log.Printf("Running command: git commit -m \"%s\"\n", msg)
 	_, err := exec.Command("git", "commit", "-m", msg).Output()
 	if err != nil {
 		log.Fatalf("failed to execute git commit: %v", err)
@@ -25,10 +27,22 @@ const (
 	StateCommit = iota
 	StateQuit
 	StateModify
+	StateCopyToClipboard
 )
 
+func copyToClipboard(msg string) error {
+	err := clipboard.Init()
+	if err != nil {
+		return err
+	}
+	clipboard.Write(clipboard.FmtText, []byte(msg))
+	// TODO: Technical Debt (If dont sleep, it can not save to clipboard)
+	time.Sleep(time.Second)
+	return nil
+}
+
 func showOutputScreen(msg string) {
-	log.Printf("Generated commit msg: '%s' \n", msg)
+	log.Printf("Generated commit msg:\n%s\n", msg)
 	state := StateQuit
 	err := huh.NewForm(
 		huh.NewGroup(
@@ -37,6 +51,7 @@ func showOutputScreen(msg string) {
 				Options(
 					huh.NewOption("Commit", StateCommit),
 					huh.NewOption("Modify", StateModify),
+					huh.NewOption("Copy to Clipboard", StateCopyToClipboard),
 					huh.NewOption("Quit", StateQuit),
 				).
 				Value(&state)),
@@ -54,6 +69,12 @@ func showOutputScreen(msg string) {
 		return
 	case StateCommit:
 		executeGitCommit(msg)
+		return
+	case StateCopyToClipboard:
+		err := copyToClipboard(msg)
+		if err != nil {
+			log.Fatal("Failed to copy to clipboard: ", err)
+		}
 		return
 	case StateQuit:
 		os.Exit(0)
@@ -91,4 +112,5 @@ func main() {
 	}
 	msg := result
 	showOutputScreen(msg)
+	os.Exit(0)
 }
