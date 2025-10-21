@@ -2,7 +2,7 @@ package provider
 
 import (
 	"context"
-	"log"
+	"encoding/json"
 	"net/http"
 	"net/url"
 
@@ -12,12 +12,22 @@ import (
 	ollamaApi "github.com/ollama/ollama/api"
 )
 
-type Ollama struct {
+type OllamaAdapter struct {
 	Config *config.Config
 	client *ollamaApi.Client
 }
 
-func (o *Ollama) InitClient(ctx context.Context) error {
+type FormatProperty struct {
+	Type string `json:"type"`
+}
+
+type FormatSchema struct {
+	Type       string                    `json:"type"`
+	Properties map[string]FormatProperty `json:"properties"`
+	Required   []string                  `json:"required"`
+}
+
+func (o *OllamaAdapter) InitClient(ctx context.Context) error {
 	u, err := url.Parse("http://localhost:11434")
 	if err != nil {
 		return err
@@ -27,8 +37,19 @@ func (o *Ollama) InitClient(ctx context.Context) error {
 	return nil
 }
 
-func (o *Ollama) GenerateCommit(ctx context.Context, diff string) (string, error) {
-	log.Println("Requesting...")
+func (o *OllamaAdapter) GenerateCommit(ctx context.Context, diff string) (*Output, error) {
+	formatSchema := &FormatSchema{
+		Type: "object",
+		Properties: map[string]FormatProperty{
+			"title":       {Type: "string"},
+			"description": {Type: "string"},
+		},
+		Required: []string{"title", "description"},
+	}
+	format, err := json.Marshal(formatSchema)
+	if err != nil {
+		return nil, err
+	}
 	stream := false
 	req := &ollamaApi.GenerateRequest{
 		Model:  "qwen2.5-coder:7b",
@@ -39,16 +60,20 @@ func (o *Ollama) GenerateCommit(ctx context.Context, diff string) (string, error
 
 		// set streaming to false
 		Stream: &stream,
+		Format: format,
 	}
-	var result string
+	var response *Output
 	respFunc := func(resp ollamaApi.GenerateResponse) error {
-		result = resp.Response
+		err = json.Unmarshal([]byte(resp.Response), &response)
+		if err != nil {
+			return err
+		}
 		return nil
 	}
 
-	err := o.client.Generate(ctx, req, respFunc)
+	err = o.client.Generate(ctx, req, respFunc)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	return result, nil
+	return response, nil
 }

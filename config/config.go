@@ -13,9 +13,10 @@ const (
 )
 
 type Config struct {
-	Provider string
-	Model    string
-	APIKey   string
+	Provider     string
+	Model        string
+	APIKey       string
+	PrefixCommit string
 	// For Gemini
 	ThinkingBudget int32
 }
@@ -33,7 +34,7 @@ func BuildConfig() (*Config, error) {
 			return nil, err
 		}
 	}
-	config := &Config{APIKey: apiKey}
+	config := &Config{APIKey: apiKey, PrefixCommit: os.Getenv("COMMIT_CRAFT_PREFIX_COMMIT")}
 	providerForm := huh.NewForm(
 		huh.NewGroup(
 			huh.NewSelect[string]().

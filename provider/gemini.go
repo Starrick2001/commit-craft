@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"encoding/json"
 
 	"commit-craft/config"
 	"commit-craft/util"
@@ -9,12 +10,12 @@ import (
 	"google.golang.org/genai"
 )
 
-type Gemini struct {
+type GeminiAdapter struct {
 	Config *config.Config
 	client *genai.Client
 }
 
-func (g *Gemini) InitClient(ctx context.Context) error {
+func (g *GeminiAdapter) InitClient(ctx context.Context) error {
 	var err error
 	g.client, err = genai.NewClient(ctx, &genai.ClientConfig{APIKey: g.Config.APIKey})
 	if err != nil {
@@ -23,7 +24,8 @@ func (g *Gemini) InitClient(ctx context.Context) error {
 	return nil
 }
 
-func (g *Gemini) GenerateCommit(ctx context.Context, diff string) (string, error) {
+func (g *GeminiAdapter) GenerateCommit(ctx context.Context, diff string) (*Output, error) {
+	var output *Output
 	result, err := g.client.Models.GenerateContent(
 		ctx,
 		g.Config.Model,
@@ -32,11 +34,18 @@ func (g *Gemini) GenerateCommit(ctx context.Context, diff string) (string, error
 			ThinkingConfig: &genai.ThinkingConfig{
 				ThinkingBudget: &g.Config.ThinkingBudget, // Disables thinking
 			},
+			ResponseMIMEType: "application/json",
+			ResponseSchema:   &genai.Schema{Type: genai.TypeObject, Properties: map[string]*genai.Schema{"title": {Type: genai.TypeString}, "description": {Type: genai.TypeString}}},
 		},
 	)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	return result.Text(), nil
+	err = json.Unmarshal([]byte(result.Text()), &output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
 }
