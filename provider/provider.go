@@ -12,7 +12,7 @@ import (
 
 type Provider interface {
 	InitClient(ctx context.Context) error
-	GenerateCommit(ctx context.Context, diff string) (*Output, error)
+	GenerateCommit(ctx context.Context, diff string) (*LLMResponse, error)
 }
 
 type Client struct {
@@ -20,7 +20,7 @@ type Client struct {
 	cfg      *config.Config
 }
 
-type Output struct {
+type LLMResponse struct {
 	Title       string `json:"title"`
 	Description string `json:"description"`
 }
@@ -39,7 +39,7 @@ func GetClient(cfg *config.Config) (*Client, error) {
 }
 
 // Combine the prefix, title, and description into a complete commit message.
-func (c *Client) buildCommit(output *Output) string {
+func (c *Client) buildCommit(output *LLMResponse) string {
 	return fmt.Sprintf("%s%s\n\n%s", c.cfg.PrefixCommit, output.Title, output.Description)
 }
 
@@ -48,7 +48,7 @@ func (c *Client) GenerateCommit(ctx context.Context, diff string) (string, error
 		return "", errors.New("can not init llm client with message: " + err.Error())
 	}
 
-	var result *Output
+	var result *LLMResponse
 	err := spinner.New().Title("Requesting...").Context(ctx).ActionWithErr(func(context.Context) error {
 		var err error
 		result, err = c.provider.GenerateCommit(ctx, diff)

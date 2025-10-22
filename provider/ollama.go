@@ -37,7 +37,7 @@ func (o *OllamaAdapter) InitClient(ctx context.Context) error {
 	return nil
 }
 
-func (o *OllamaAdapter) GenerateCommit(ctx context.Context, diff string) (*Output, error) {
+func (o *OllamaAdapter) GenerateCommit(ctx context.Context, diff string) (*LLMResponse, error) {
 	formatSchema := &FormatSchema{
 		Type: "object",
 		Properties: map[string]FormatProperty{
@@ -62,7 +62,7 @@ func (o *OllamaAdapter) GenerateCommit(ctx context.Context, diff string) (*Outpu
 		Stream: &stream,
 		Format: format,
 	}
-	var response *Output
+	var response *LLMResponse
 	respFunc := func(resp ollamaApi.GenerateResponse) error {
 		err = json.Unmarshal([]byte(resp.Response), &response)
 		if err != nil {

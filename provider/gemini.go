@@ -24,8 +24,8 @@ func (g *GeminiAdapter) InitClient(ctx context.Context) error {
 	return nil
 }
 
-func (g *GeminiAdapter) GenerateCommit(ctx context.Context, diff string) (*Output, error) {
-	var output *Output
+func (g *GeminiAdapter) GenerateCommit(ctx context.Context, diff string) (*LLMResponse, error) {
+	var output *LLMResponse
 	result, err := g.client.Models.GenerateContent(
 		ctx,
 		g.Config.Model,
