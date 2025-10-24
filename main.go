@@ -10,7 +10,9 @@ import (
 
 	"commit-craft/config"
 	"commit-craft/provider"
+	"commit-craft/tui"
 
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/huh"
 	"golang.design/x/clipboard"
 )
@@ -92,7 +94,17 @@ func executeGitDiff() (string, error) {
 	return string(diff), nil
 }
 
+func temp() {
+	model := tui.NewModel()
+	p := tea.NewProgram(model, tea.WithAltScreen())
+	if _, err := p.Run(); err != nil {
+		log.Fatalln(err)
+	}
+}
+
 func main() {
+	temp()
+	os.Exit(0)
 	ctx := context.Background()
 	config, err := config.BuildConfig()
 	if err != nil {
