@@ -10,7 +10,9 @@ import (
 
 	"commit-craft/config"
 	"commit-craft/provider"
+	"commit-craft/tui"
 
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/huh"
 	"golang.design/x/clipboard"
 )
@@ -92,7 +94,25 @@ func executeGitDiff() (string, error) {
 	return string(diff), nil
 }
 
+func temp() {
+	if os.Getenv("HELP_DEBUG") != "" {
+		f, err := tea.LogToFile("debug.log", "")
+		if err != nil {
+			log.Fatalln("Couldn't open a file for logging:", err)
+			os.Exit(1)
+		}
+		defer f.Close() // nolint:errcheck
+	}
+	model := tui.NewModel()
+	p := tea.NewProgram(model, tea.WithAltScreen())
+	if _, err := p.Run(); err != nil {
+		log.Fatalln(err)
+	}
+}
+
 func main() {
+	temp()
+	os.Exit(0)
 	ctx := context.Background()
 	config, err := config.BuildConfig()
 	if err != nil {

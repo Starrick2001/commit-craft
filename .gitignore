@@ -1,3 +1,7 @@
 main
 commit-craft
 commit-craft.exe
+*.log
+
+# Added by goreleaser init:
+dist/
