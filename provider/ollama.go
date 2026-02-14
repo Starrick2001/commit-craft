@@ -32,6 +32,10 @@ func (o *OllamaAdapter) InitClient(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+
+	if o.client != nil {
+		return nil
+	}
 	o.client = ollamaApi.NewClient(u, http.DefaultClient)
 	// g.client, err = api.ClientFromEnvironment()
 	return nil
@@ -52,7 +56,7 @@ func (o *OllamaAdapter) GenerateCommit(ctx context.Context, diff string) (*Outpu
 	}
 	stream := false
 	req := &ollamaApi.GenerateRequest{
-		Model:  "qwen2.5-coder:7b",
+		Model:  o.Config.Model,
 		Prompt: util.GeneralPrompt + (diff),
 		Options: map[string]any{
 			"temperature": 0,
@@ -76,4 +80,20 @@ func (o *OllamaAdapter) GenerateCommit(ctx context.Context, diff string) (*Outpu
 		return nil, err
 	}
 	return response, nil
+}
+
+func (o *OllamaAdapter) GetListModel(ctx context.Context) ([]*config.ModelOption, error) {
+	if err := o.InitClient(ctx); err != nil {
+		return nil, err
+	}
+	modelOptions := []*config.ModelOption{}
+	models, err := o.client.List(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, model := range models.Models {
+		modelOptions = append(modelOptions, &config.ModelOption{Name: model.Name, Code: model.Model, Description: ""})
+	}
+	return modelOptions, nil
 }

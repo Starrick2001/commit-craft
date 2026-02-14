@@ -13,6 +13,7 @@ import (
 type Provider interface {
 	InitClient(ctx context.Context) error
 	GenerateCommit(ctx context.Context, diff string) (*Output, error)
+	GetListModel(ctx context.Context) ([]*config.ModelOption, error)
 }
 
 type Client struct {
@@ -59,4 +60,8 @@ func (c *Client) GenerateCommit(ctx context.Context, diff string) (string, error
 	}
 
 	return c.buildCommit(result), nil
+}
+
+func (c *Client) GetListModel(ctx context.Context) ([]*config.ModelOption, error) {
+	return c.provider.GetListModel(ctx)
 }
