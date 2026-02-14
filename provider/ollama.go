@@ -28,14 +28,15 @@ type FormatSchema struct {
 }
 
 func (o *OllamaAdapter) InitClient(ctx context.Context) error {
+	if o.client != nil {
+		return nil
+	}
+
 	u, err := url.Parse("http://localhost:11434")
 	if err != nil {
 		return err
 	}
 
-	if o.client != nil {
-		return nil
-	}
 	o.client = ollamaApi.NewClient(u, http.DefaultClient)
 	// g.client, err = api.ClientFromEnvironment()
 	return nil

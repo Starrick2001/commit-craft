@@ -12,6 +12,8 @@ import (
 	"google.golang.org/genai"
 )
 
+const DEFAULT_MODEL = "models/gemini-flash-latest"
+
 type GeminiAdapter struct {
 	Config *config.Config
 	client *genai.Client
@@ -68,7 +70,7 @@ func (g *GeminiAdapter) GetListModel(ctx context.Context) ([]*config.ModelOption
 	}
 
 	modelOptions := []*config.ModelOption{
-		{Name: fmt.Sprintf("Default Gemini Model (%v)", util.GEMINI_DEFAULT_MODEL), Code: util.GEMINI_DEFAULT_MODEL},
+		{Name: fmt.Sprintf("Default Model (%v)", DEFAULT_MODEL), Code: DEFAULT_MODEL},
 	}
 
 	for _, geminiModel := range geminiModels.Items {

@@ -112,7 +112,7 @@ func main() {
 	}
 	err = config.ChooseModel(modelOptions)
 	if err != nil {
-		log.Fatalln(`failed to get model options `, err)
+		log.Fatalln(`failed to get model selection `, err)
 	}
 	result, err := commitCraftClient.GenerateCommit(ctx, diff)
 	if err != nil {
