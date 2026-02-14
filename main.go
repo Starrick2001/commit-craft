@@ -94,13 +94,13 @@ func executeGitDiff() (string, error) {
 
 func main() {
 	ctx := context.Background()
-	config, err := config.BuildConfig()
-	if err != nil {
-		log.Fatalln(`failed to build commit-craft config`, err)
-	}
 	diff, err := executeGitDiff()
 	if err != nil {
 		log.Fatalln(`failed to execute "git diff --cached"`, err)
+	}
+	config, err := config.BuildConfig()
+	if err != nil {
+		log.Fatalln(`failed to build commit-craft config`, err)
 	}
 	commitCraftClient, err := provider.GetClient(config)
 	if err != nil {
