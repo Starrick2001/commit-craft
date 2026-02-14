@@ -106,6 +106,14 @@ func main() {
 	if err != nil {
 		log.Fatalln(`failed to init commit craft client `, err)
 	}
+	modelOptions, err := commitCraftClient.GetListModel(ctx)
+	if err != nil {
+		log.Fatalln(`failed to get model options `, err)
+	}
+	err = config.ChooseModel(modelOptions)
+	if err != nil {
+		log.Fatalln(`failed to get model options `, err)
+	}
 	result, err := commitCraftClient.GenerateCommit(ctx, diff)
 	if err != nil {
 		log.Fatalln("Failed to generate content " + err.Error())

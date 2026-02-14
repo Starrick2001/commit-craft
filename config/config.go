@@ -12,6 +12,12 @@ const (
 	OllamaClient = "ollama"
 )
 
+type ModelOption struct {
+	Name        string
+	Code        string
+	Description string
+}
+
 type Config struct {
 	Provider     string
 	Model        string
@@ -22,6 +28,20 @@ type Config struct {
 }
 
 func BuildConfig() (*Config, error) {
+	config := &Config{PrefixCommit: os.Getenv("COMMIT_CRAFT_PREFIX_COMMIT"), ThinkingBudget: 0}
+
+	if err := config.GetAPIKey(); err != nil {
+		return nil, err
+	}
+
+	if err := config.ChooseProvider(); err != nil {
+		return nil, err
+	}
+
+	return config, nil
+}
+
+func (c *Config) GetAPIKey() error {
 	apiKey, isEnvAPIKeyFound := os.LookupEnv("COMMIT_CRAFT_GEMINI_KEY")
 	if !isEnvAPIKeyFound {
 		form := huh.NewForm(
@@ -31,10 +51,15 @@ func BuildConfig() (*Config, error) {
 		)
 		if err := form.Run(); err != nil {
 			log.Println(`Failed to build "huh" form ` + err.Error())
-			return nil, err
+			return err
 		}
 	}
-	config := &Config{APIKey: apiKey, PrefixCommit: os.Getenv("COMMIT_CRAFT_PREFIX_COMMIT")}
+
+	c.APIKey = apiKey
+	return nil
+}
+
+func (c *Config) ChooseProvider() error {
 	providerForm := huh.NewForm(
 		huh.NewGroup(
 			huh.NewSelect[string]().
@@ -43,26 +68,34 @@ func BuildConfig() (*Config, error) {
 					huh.NewOption("Gemini", (GeminiClient)),
 					huh.NewOption("Ollama", (OllamaClient)),
 				).
-				Value(&config.Provider)))
+				Value(&c.Provider)))
 	err := providerForm.Run()
 	if err != nil {
-		return nil, err
+		return err
 	}
-	switch config.Provider {
-	case GeminiClient:
-		modelForm := huh.NewForm(
-			huh.NewGroup(
-				huh.NewSelect[string]().
-					Title("Choose a model:").
-					Options(
-						huh.NewOption("gemini-2.0-flash", "gemini-2.0-flash"),
-						huh.NewOption("gemini-2.5-flash", "gemini-2.5-flash")).
-					Value(&config.Model)),
-		)
-		if err := modelForm.Run(); err != nil {
-			log.Println(`Failed to build "huh" form ` + err.Error())
-			return nil, err
-		}
+	return nil
+}
+
+func (c *Config) ChooseModel(modelOptions []*ModelOption) error {
+	formOptions := []huh.Option[string]{}
+
+	for _, modelOption := range modelOptions {
+		formOptions = append(formOptions, huh.Option[string]{Value: modelOption.Code, Key: modelOption.Name})
 	}
-	return config, nil
+
+	modelForm := huh.NewForm(
+		huh.NewGroup(
+			huh.NewSelect[string]().
+				Title("Choose a model:").
+				Options(
+					formOptions...).
+				Value(&c.Model)),
+	)
+
+	if err := modelForm.Run(); err != nil {
+		log.Println(`Failed to build "huh" form: ` + err.Error())
+		return err
+	}
+
+	return nil
 }
