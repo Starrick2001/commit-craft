@@ -5,7 +5,7 @@ go 1.24.2
 require (
 	github.com/charmbracelet/huh v0.8.0
 	github.com/charmbracelet/huh/spinner v0.0.0-20251005153135-a01a1e304532
-	github.com/ollama/ollama v0.16.1
+	github.com/ollama/ollama v0.16.3
 	golang.design/x/clipboard v0.7.1
 	google.golang.org/genai v1.46.0
 )
