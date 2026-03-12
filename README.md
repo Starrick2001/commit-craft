@@ -16,13 +16,33 @@ Commit Craft is a Go-based tool that leverages AI to automatically generate desc
 - [Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) must be installed.
 - You need an API key for your chosen AI provider (e.g., Gemini).
 
-## Installation
+## Installation (Recommended)
 
-1. **Download the binary:**
-   Download the latest binary for your operating system from the [Releases page](https://github.com/starrick2001/commit-craft/releases).
+Download the latest binary from the Releases page and put it on your PATH.
+
+### Quick Install Script (Linux/macOS)
+
+Use the install script to download the latest release binary and install it:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/Starrick2001/commit-craft/main/scripts/install.sh | bash
+```
+
+You can also customize the install directory:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/Starrick2001/commit-craft/main/scripts/install.sh | bash -s -- --dir ~/.local/bin
+```
+
+### Manual Install
+
+1. **Download the latest release binary:**
+   Grab the newest `commit-craft` binary from the [Releases page](https://github.com/starrick2001/commit-craft/releases).
+   You can also download it directly:
 
    ```bash
-   curl -O https://github.com/Starrick2001/commit-craft/releases/latest/commit-craft
+   curl -L -o commit-craft \
+     https://github.com/Starrick2001/commit-craft/releases/latest/download/commit-craft
    ```
 
 2. **Make it executable:**
@@ -31,8 +51,8 @@ Commit Craft is a Go-based tool that leverages AI to automatically generate desc
    chmod +x commit-craft
    ```
 
-3. **Move to your PATH (Optional):**
-   For easy access, move the binary to a directory in your system's PATH.
+3. **Move it onto your PATH:**
+   This makes `commit-craft` available globally.
 
    ```bash
    sudo mv commit-craft /usr/local/bin/
@@ -111,7 +131,7 @@ If you prefer to build the tool from the source code, follow these steps.
 1. **Clone the repository:**
 
    ```bash
-   git clone https://github.com/your-username/commit-craft.git
+   git clone https://github.com/Starrick2001/commit-craft.git
    cd commit-craft
    ```
 
