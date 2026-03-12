@@ -56,6 +56,8 @@ func (o *OllamaAdapter) GenerateCommit(ctx context.Context, diff string) (*Outpu
 		return nil, err
 	}
 	stream := false
+	think := &ollamaApi.ThinkValue{Value: false}
+
 	req := &ollamaApi.GenerateRequest{
 		Model:  o.Config.Model,
 		Prompt: util.GeneralPrompt + (diff),
@@ -66,6 +68,7 @@ func (o *OllamaAdapter) GenerateCommit(ctx context.Context, diff string) (*Outpu
 		// set streaming to false
 		Stream: &stream,
 		Format: format,
+		Think:  think,
 	}
 	var response *Output
 	respFunc := func(resp ollamaApi.GenerateResponse) error {
