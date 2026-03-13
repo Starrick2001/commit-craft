@@ -7,47 +7,87 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - goos: linux
+            goarch: amd64
+            runner: ubuntu-24.04
+          - goos: linux
+            goarch: arm64
+            runner: ubuntu-24.04-arm
+          - goos: darwin
+            goarch: amd64
+            runner: macos-15-intel
+          - goos: darwin
+            goarch: arm64
+            runner: macos-latest
+    runs-on: ${{ matrix.runner }}
+    environment: Release
     permissions:
-      contents: write
+      contents: read
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Check tag is on main
-        id: tagcheck
-        run: |
-          git fetch origin main --depth=1
-          if git merge-base --is-ancestor "${GITHUB_SHA}" "origin/main"; then
-            echo "on_main=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "on_main=false" >> "$GITHUB_OUTPUT"
-            echo "Tag commit is not on main; skipping build/release."
-          fi
-
       - name: Setup Go
-        if: steps.tagcheck.outputs.on_main == 'true'
         uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
           cache: true
 
-      - name: Install build deps
-        if: steps.tagcheck.outputs.on_main == 'true'
+      - name: Install X11 build deps (Linux)
+        if: matrix.goos == 'linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y libx11-dev
+          sudo apt-get install -y libx11-dev pkg-config
 
-      - name: Build
-        if: steps.tagcheck.outputs.on_main == 'true'
+      - name: Build with GoReleaser
+        uses: goreleaser/goreleaser-action@v6
+        with:
+          distribution: goreleaser
+          version: latest
+          args: build --clean --single-target
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+          REPOSITORY_OWNER: ${{ vars.REPOSITORY_OWNER }}
+          REPOSITORY_NAME: ${{ vars.REPOSITORY_NAME }}
+
+      - name: Collect binary
         run: |
-          mkdir -p dist
-          go build -trimpath -ldflags "-s -w" -o dist/commit-craft .
+          set -euo pipefail
+          name="commit-craft_${{ matrix.goos }}_${{ matrix.goarch }}"
+          bin_path="$(find dist -type f -name "$name" | head -n 1)"
+          if [[ -z "$bin_path" ]]; then
+            echo "Binary not found: $name" >&2
+            exit 1
+          fi
+          mkdir -p dist/out
+          cp "$bin_path" "dist/out/$name"
+
+      - name: Upload binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: commit-craft-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: dist/out/commit-craft_${{ matrix.goos }}_${{ matrix.goarch }}
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download binaries
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
 
       - name: Create GitHub release
-        if: steps.tagcheck.outputs.on_main == 'true'
         uses: softprops/action-gh-release@v2
         with:
-          files: dist/commit-craft
+          files: dist/commit-craft_*

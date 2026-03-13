@@ -2,7 +2,7 @@
 set -euo pipefail
 
 REPO="Starrick2001/commit-craft"
-ASSET="commit-craft"
+ASSET=""
 INSTALL_DIR=""
 
 usage() {
@@ -11,13 +11,13 @@ Usage: install.sh [options]
 
 Options:
   -d, --dir DIR     Install directory (default: /usr/local/bin if writable, else ~/.local/bin)
-  -a, --asset NAME  Release asset name to download (default: commit-craft)
+  -a, --asset NAME  Release asset name to download (default: auto-detected per OS/arch)
   -h, --help        Show this help message
 
 Examples:
   ./install.sh
   ./install.sh --dir ~/.local/bin
-  ./install.sh --asset commit-craft
+  ./install.sh --asset commit-craft_linux_amd64
 USAGE
 }
 
@@ -43,6 +43,29 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
+detect_platform() {
+  local os arch
+  case "$(uname -s)" in
+    Linux) os="linux" ;;
+    Darwin) os="darwin" ;;
+    *)
+      echo "Unsupported OS: $(uname -s)" >&2
+      exit 1
+      ;;
+  esac
+
+  case "$(uname -m)" in
+    x86_64|amd64) arch="amd64" ;;
+    arm64|aarch64) arch="arm64" ;;
+    *)
+      echo "Unsupported architecture: $(uname -m)" >&2
+      exit 1
+      ;;
+  esac
+
+  printf "%s_%s" "$os" "$arch"
+}
+
 if [[ -z "$INSTALL_DIR" ]]; then
   if [[ -w "/usr/local/bin" ]]; then
     INSTALL_DIR="/usr/local/bin"
@@ -54,6 +77,11 @@ fi
 if ! command -v curl >/dev/null 2>&1 && ! command -v wget >/dev/null 2>&1; then
   echo "Error: curl or wget is required." >&2
   exit 1
+fi
+
+if [[ -z "$ASSET" ]]; then
+  PLATFORM="$(detect_platform)"
+  ASSET="commit-craft_${PLATFORM}"
 fi
 
 TMP_FILE="$(mktemp -t commit-craft.XXXXXX)"
