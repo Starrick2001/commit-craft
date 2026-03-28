@@ -7,7 +7,7 @@ require (
 	github.com/charmbracelet/huh/spinner v0.0.0-20251005153135-a01a1e304532
 	github.com/ollama/ollama v0.17.7
 	golang.design/x/clipboard v0.7.1
-	google.golang.org/genai v1.49.0
+	google.golang.org/genai v1.52.0
 )
 
 require (
