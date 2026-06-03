@@ -1,11 +1,11 @@
 module commit-craft
 
-go 1.24.2
+go 1.26.0
 
 require (
 	github.com/charmbracelet/huh v0.8.0
 	github.com/charmbracelet/huh/spinner v0.0.0-20251005153135-a01a1e304532
-	github.com/ollama/ollama v0.17.7
+	github.com/ollama/ollama v0.30.2
 	golang.design/x/clipboard v0.7.1
 	google.golang.org/genai v1.58.0
 )
