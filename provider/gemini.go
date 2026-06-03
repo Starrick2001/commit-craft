@@ -40,9 +40,9 @@ func (g *GeminiAdapter) GenerateCommit(ctx context.Context, diff string) (*Outpu
 		g.Config.Model,
 		genai.Text(util.GeneralPrompt+(diff)),
 		&genai.GenerateContentConfig{
-			ThinkingConfig: &genai.ThinkingConfig{
-				ThinkingBudget: &g.Config.ThinkingBudget, // Disables thinking
-			},
+			// ThinkingConfig: &genai.ThinkingConfig{
+			// 	ThinkingBudget: &g.Config.ThinkingBudget, // Disables thinking
+			// },
 			ResponseMIMEType: "application/json",
 			ResponseSchema:   &genai.Schema{Type: genai.TypeObject, Properties: map[string]*genai.Schema{"title": {Type: genai.TypeString}, "description": {Type: genai.TypeString}}},
 		},
@@ -51,7 +51,7 @@ func (g *GeminiAdapter) GenerateCommit(ctx context.Context, diff string) (*Outpu
 		return nil, err
 	}
 
-	err = json.Unmarshal([]byte(result.Text()), &output)
+	err = json.Unmarshal([]byte(util.SanitizeJSONResponse(result.Text())), &output)
 	if err != nil {
 		return nil, err
 	}

@@ -72,7 +72,7 @@ func (o *OllamaAdapter) GenerateCommit(ctx context.Context, diff string) (*Outpu
 	}
 	var response *Output
 	respFunc := func(resp ollamaApi.GenerateResponse) error {
-		err = json.Unmarshal([]byte(resp.Response), &response)
+		err = json.Unmarshal([]byte(util.SanitizeJSONResponse(resp.Response)), &response)
 		if err != nil {
 			return err
 		}
