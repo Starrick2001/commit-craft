@@ -1,3 +1,4 @@
+// Package main runs the commit-craft CLI entrypoint.
 package main
 
 import (

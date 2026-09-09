@@ -1,3 +1,4 @@
+// Package config defines application configuration and user selection flows.
 package config
 
 import (

@@ -1,3 +1,4 @@
+// Package util provides shared constants and helpers.
 package util
 
 import "strings"

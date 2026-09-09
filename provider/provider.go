@@ -1,3 +1,4 @@
+// Package provider defines the interfaces and concrete types for interacting with different LLM (Large Language Model) providers.
 package provider
 
 import (
