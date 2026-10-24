@@ -5,7 +5,7 @@ go 1.26.0
 require (
 	github.com/charmbracelet/huh v1.0.0
 	github.com/charmbracelet/huh/spinner v0.0.0-20251005153135-a01a1e304532
-	github.com/ollama/ollama v0.33.0
+	github.com/ollama/ollama v0.40.8
 	golang.design/x/clipboard v0.7.1
 	google.golang.org/genai v1.70.0
 )
@@ -42,7 +42,7 @@ require (
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
-	github.com/mattn/go-localereader v0.0.1 // indirect
+	github.com/mattn/go-localereader v0.0.2-0.20220822084737-6bae6c923850 // indirect
 	github.com/mattn/go-runewidth v0.0.16 // indirect
 	github.com/mitchellh/hashstructure/v2 v2.0.2 // indirect
 	github.com/muesli/ansi v0.0.0-20230316100256-276c6243b2f6 // indirect
